@@ -16,6 +16,7 @@ modes:
   risk: modes/risk.md
   doc: modes/doc.md
   onboarding: modes/onboarding.md
+  domain: modes/domain.md
   refactor: modes/refactor.md
 
 schemas:
