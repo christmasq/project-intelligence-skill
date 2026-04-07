@@ -1,6 +1,6 @@
 {
   "project_name": "sample-frontend-app",
-  "description": "一個典型的前端單頁應用",
+  "description": "一個典型的前端單頁應用，包含頁面路由、狀態管理與 API 互動。",
   "tech_stack": {
     "languages": ["TypeScript"],
     "frameworks": ["React"],
@@ -8,51 +8,152 @@
   },
   "modules": [
     {
-      "name": "components",
-      "description": "UI 元件",
+      "name": "ui-components",
+      "description": "UI 元件與互動區域",
       "keywords": ["component", "ui", "render", "props"],
       "important_paths": ["src/components/"]
-    },
-    {
-      "name": "state",
-      "description": "狀態管理",
-      "keywords": ["store", "state", "reducer", "action", "slice", "atom"],
-      "important_paths": ["src/store/", "src/state/"]
-    },
-    {
-      "name": "api-client",
-      "description": "API 呼叫與資料取得",
-      "keywords": ["api", "fetch", "request", "query", "hook"],
-      "important_paths": ["src/api/", "src/hooks/"]
     },
     {
       "name": "routing",
       "description": "頁面路由與導航",
       "keywords": ["route", "page", "navigate", "path"],
       "important_paths": ["src/pages/", "src/routes/"]
+    },
+    {
+      "name": "state-management",
+      "description": "應用狀態管理與事件分派",
+      "keywords": ["store", "state", "reducer", "action", "slice", "atom"],
+      "important_paths": ["src/store/", "src/state/"]
+    },
+    {
+      "name": "data-client",
+      "description": "API 呼叫與資料同步",
+      "keywords": ["api", "fetch", "request", "query", "hook", "mutation"],
+      "important_paths": ["src/api/", "src/hooks/"]
     }
   ],
   "domain_terms": {},
+  "business_domains": [
+    {
+      "name": "feature area",
+      "description": "可從頁面與 feature 結構辨識的主要業務區域（具體語意待確認）",
+      "keywords": ["page", "feature"],
+      "evidence_paths": ["src/pages/", "src/features/"]
+    }
+  ],
+  "domain_objects": [
+    {
+      "name": "app state",
+      "description": "全域或 feature state 容器",
+      "kind": "state_container",
+      "important_paths": ["src/store/", "src/state/"]
+    },
+    {
+      "name": "remote resources",
+      "description": "由 API 讀取或 mutation 更新的遠端資料",
+      "kind": "resource",
+      "important_paths": ["src/api/", "src/hooks/"]
+    },
+    {
+      "name": "view models",
+      "description": "供頁面或元件渲染使用的資料形狀",
+      "kind": "view_model",
+      "important_paths": ["src/components/", "src/pages/"]
+    }
+  ],
+  "business_operations": [
+    {
+      "name": "navigate feature flows",
+      "description": "使用者在不同頁面與流程之間移動",
+      "actors": ["end user"],
+      "entrypoints": ["page routes", "component actions"],
+      "logic_units": ["routing", "state-management"],
+      "related_modules": ["routing", "ui-components", "state-management"],
+      "domain_objects": ["app state", "view models"],
+      "state_changes": ["route state", "UI state"],
+      "side_effects": ["navigation", "data fetch trigger"]
+    },
+    {
+      "name": "load and mutate remote resources",
+      "description": "讀取與更新遠端資料並同步到畫面",
+      "actors": ["end user"],
+      "entrypoints": ["component actions", "queries", "mutations"],
+      "logic_units": ["data-client", "state-management"],
+      "related_modules": ["data-client", "state-management", "ui-components"],
+      "domain_objects": ["remote resources", "app state", "view models"],
+      "state_changes": ["loading state", "error state", "success state", "cached data"],
+      "side_effects": ["API request", "cache update", "UI refresh"]
+    }
+  ],
+  "state_machines": [
+    {
+      "name": "async request lifecycle",
+      "states": ["idle", "loading", "success", "error"],
+      "triggers": ["query start", "query success", "query failure", "mutation result"],
+      "related_domain_objects": ["remote resources", "app state"]
+    }
+  ],
+  "entrypoint_map": [
+    {
+      "entrypoint": "page routes",
+      "kind": "page",
+      "related_logic_units": ["routing", "data-client"],
+      "related_domain_objects": ["view models", "remote resources"]
+    },
+    {
+      "entrypoint": "component actions",
+      "kind": "component_action",
+      "related_logic_units": ["state-management", "data-client"],
+      "related_domain_objects": ["app state", "remote resources"]
+    }
+  ],
+  "interaction_flows": [
+    {
+      "name": "ui action to remote update flow",
+      "description": "使用者操作觸發 mutation，完成後更新 state 與畫面",
+      "steps": ["component action", "mutation", "API request", "state update", "UI refresh"],
+      "related_modules": ["ui-components", "data-client", "state-management"],
+      "confidence": "medium"
+    }
+  ],
+  "integration_boundaries": [
+    {
+      "name": "remote api",
+      "kind": "api",
+      "description": "前端與後端同步資料的主要邊界",
+      "related_operations": ["load and mutate remote resources"]
+    },
+    {
+      "name": "client cache",
+      "kind": "browser-storage",
+      "description": "本地狀態或快取層",
+      "related_operations": ["load and mutate remote resources", "navigate feature flows"]
+    }
+  ],
   "risk_patterns": [
     {
       "name": "狀態管理變更",
-      "description": "全域狀態結構的變更可能影響多個元件",
+      "description": "全域狀態結構的變更可能影響多個元件或流程",
       "keywords": ["store", "state", "reducer", "dispatch", "context"]
     },
     {
-      "name": "路由變更",
-      "description": "路由路徑或導航邏輯的變更可能影響 deep link 和使用者流程",
-      "keywords": ["route", "path", "navigate", "redirect"]
+      "name": "路由與流程變更",
+      "description": "路由路徑或導航邏輯的變更可能影響使用者流程與 deep link",
+      "keywords": ["route", "path", "navigate", "redirect", "page"]
     },
     {
-      "name": "API 介面變更",
-      "description": "API 呼叫方式或回應處理邏輯的變更",
-      "keywords": ["fetch", "request", "response", "endpoint", "api"]
+      "name": "遠端互動變更",
+      "description": "API 呼叫、快取或 mutation 邏輯的變更可能影響資料一致性與 UI 狀態",
+      "keywords": ["fetch", "request", "response", "query", "mutation", "cache"]
     }
   ],
   "analysis_preferences": {
     "focus": ["behavior", "impact", "risk"],
     "ignore_paths": ["node_modules", "dist", "build", "coverage", ".git", "public"],
     "output_language": "zh-TW"
-  }
+  },
+  "domain_unknowns": [
+    "各 feature area 的實際產品語意待確認",
+    "client cache 是否包含持久化策略待確認"
+  ]
 }

@@ -1,10 +1,10 @@
 {
   "project_name": "sample-backend-service",
-  "description": "一個典型的後端 API 服務，提供 RESTful 端點",
+  "description": "一個典型的後端 API 服務，提供 RESTful 端點與背景工作。",
   "tech_stack": {
     "languages": ["TypeScript"],
     "frameworks": ["Express"],
-    "infrastructure": ["PostgreSQL", "Redis"]
+    "infrastructure": ["PostgreSQL", "Redis", "Queue"]
   },
   "modules": [
     {
@@ -14,25 +14,108 @@
       "important_paths": ["src/api/", "src/routes/", "src/middleware/"]
     },
     {
-      "name": "services",
-      "description": "核心邏輯層",
-      "keywords": ["service", "usecase"],
-      "important_paths": ["src/services/"]
+      "name": "application-logic",
+      "description": "核心邏輯與 use case 區域",
+      "keywords": ["service", "usecase", "application"],
+      "important_paths": ["src/services/", "src/use-cases/"]
     },
     {
       "name": "data-access",
-      "description": "資料存取層（repository / ORM 操作）",
+      "description": "資料存取與持久化邊界",
       "keywords": ["repository", "model", "query", "migration", "schema"],
       "important_paths": ["src/models/", "src/repositories/", "migrations/"]
     },
     {
-      "name": "config",
-      "description": "設定與環境變數管理",
-      "keywords": ["config", "env", "secret"],
-      "important_paths": ["src/config/", ".env.example"]
+      "name": "jobs",
+      "description": "背景工作與非同步處理",
+      "keywords": ["job", "worker", "queue", "cron"],
+      "important_paths": ["src/jobs/", "src/workers/"]
     }
   ],
   "domain_terms": {},
+  "business_domains": [
+    {
+      "name": "resource management",
+      "description": "從 API 與資料模型可辨識的主要資源管理領域（具體語意待確認）",
+      "keywords": ["resource", "record", "management"],
+      "evidence_paths": ["src/api/", "src/models/"]
+    }
+  ],
+  "domain_objects": [
+    {
+      "name": "persistent records",
+      "description": "服務內被持久化的核心資料物件（具體語意待確認）",
+      "kind": "resource",
+      "important_paths": ["src/models/", "src/repositories/"]
+    },
+    {
+      "name": "background job payloads",
+      "description": "非同步工作處理時傳遞的資料物件",
+      "kind": "model",
+      "important_paths": ["src/jobs/", "src/workers/"]
+    }
+  ],
+  "business_operations": [
+    {
+      "name": "manage resource records",
+      "description": "透過 API 建立、修改或刪除核心資料記錄",
+      "actors": ["api caller"],
+      "entrypoints": ["HTTP routes"],
+      "logic_units": ["services", "use cases"],
+      "related_modules": ["api", "application-logic", "data-access"],
+      "domain_objects": ["persistent records"],
+      "state_changes": ["record created/updated/deleted"],
+      "side_effects": ["database write", "cache update"]
+    },
+    {
+      "name": "run background processing",
+      "description": "以 job 或 worker 執行延後處理",
+      "actors": ["system"],
+      "entrypoints": ["job queue", "worker"],
+      "logic_units": ["jobs"],
+      "related_modules": ["jobs", "application-logic"],
+      "domain_objects": ["background job payloads", "persistent records"],
+      "state_changes": ["async processing status"],
+      "side_effects": ["queue consumption", "database write", "notification"]
+    }
+  ],
+  "entrypoint_map": [
+    {
+      "entrypoint": "HTTP routes",
+      "kind": "route",
+      "related_logic_units": ["services", "use cases"],
+      "related_domain_objects": ["persistent records"]
+    },
+    {
+      "entrypoint": "job workers",
+      "kind": "job",
+      "related_logic_units": ["jobs"],
+      "related_domain_objects": ["background job payloads", "persistent records"]
+    }
+  ],
+  "interaction_flows": [
+    {
+      "name": "request to persistence flow",
+      "description": "API request 進入後呼叫 application logic，最後寫入持久化資源",
+      "steps": ["route", "application logic", "repository", "database write"],
+      "related_modules": ["api", "application-logic", "data-access"],
+      "confidence": "medium"
+    }
+  ],
+  "integration_boundaries": [
+    {
+      "name": "primary database",
+      "kind": "database",
+      "description": "主要持久化資料庫",
+      "related_operations": ["manage resource records", "run background processing"]
+    },
+    {
+      "name": "job queue",
+      "kind": "queue",
+      "description": "背景工作排程與消費邊界",
+      "related_operations": ["run background processing"]
+    }
+  ],
   "risk_patterns": [
     {
       "name": "API 契約變更",
@@ -40,24 +123,28 @@
       "keywords": ["route", "response", "status", "endpoint", "schema"]
     },
     {
-      "name": "資料結構變更",
-      "description": "資料庫 schema 或 model 結構變更可能影響多個模組",
-      "keywords": ["migration", "column", "field", "table", "index"]
+      "name": "持久化結構變更",
+      "description": "schema、model 或 repository 變更可能影響多個操作與背景工作",
+      "keywords": ["migration", "column", "field", "table", "index", "repository"]
     },
     {
       "name": "認證與授權",
-      "description": "認證機制的變更是高敏感操作",
+      "description": "身份驗證與權限變更是高敏感操作",
       "keywords": ["auth", "token", "session", "permission", "role"]
     },
     {
-      "name": "副作用操作",
-      "description": "寫入、刪除、發送通知等不可逆操作",
-      "keywords": ["delete", "remove", "send", "notify", "write", "update"]
+      "name": "非同步副作用",
+      "description": "背景工作、通知或不可逆寫入容易造成隱性回歸",
+      "keywords": ["job", "worker", "queue", "notify", "write", "update"]
     }
   ],
   "analysis_preferences": {
     "focus": ["behavior", "impact", "risk", "security"],
     "ignore_paths": ["node_modules", "dist", "coverage", ".git"],
     "output_language": "zh-TW"
-  }
+  },
+  "domain_unknowns": [
+    "主要 resource 的實際業務名稱與完整生命週期待確認",
+    "背景工作的觸發條件與重試策略待確認"
+  ]
 }

@@ -1,6 +1,6 @@
 {
   "project_name": "sample-monorepo",
-  "description": "一個包含多個套件的 monorepo 專案",
+  "description": "一個包含多個應用與共用套件的 monorepo 專案。",
   "tech_stack": {
     "languages": ["TypeScript"],
     "frameworks": [],
@@ -9,21 +9,15 @@
   "modules": [
     {
       "name": "shared-libs",
-      "description": "跨套件共用的程式庫",
+      "description": "跨套件共用的程式庫與基礎能力",
       "keywords": ["shared", "common", "utils", "lib"],
       "important_paths": ["packages/shared/", "packages/common/", "libs/"]
     },
     {
-      "name": "app-a",
-      "description": "應用 A（具體職責待確認）",
-      "keywords": [],
-      "important_paths": ["apps/app-a/", "packages/app-a/"]
-    },
-    {
-      "name": "app-b",
-      "description": "應用 B（具體職責待確認）",
-      "keywords": [],
-      "important_paths": ["apps/app-b/", "packages/app-b/"]
+      "name": "applications",
+      "description": "多個獨立應用或產品面向",
+      "keywords": ["app", "package", "workspace"],
+      "important_paths": ["apps/", "packages/"]
     },
     {
       "name": "build-config",
@@ -33,6 +27,66 @@
     }
   ],
   "domain_terms": {},
+  "business_domains": [
+    {
+      "name": "application areas",
+      "description": "各 app 或 package 所代表的不同產品區域（具體語意待確認）",
+      "keywords": ["app", "workspace", "feature"],
+      "evidence_paths": ["apps/", "packages/"]
+    }
+  ],
+  "domain_objects": [
+    {
+      "name": "shared contracts",
+      "description": "多套件共用的型別、工具或契約",
+      "kind": "resource",
+      "important_paths": ["packages/shared/", "packages/common/", "libs/"]
+    },
+    {
+      "name": "application-specific state or resources",
+      "description": "各應用自己維護的狀態或資源（具體語意待確認）",
+      "kind": "resource",
+      "important_paths": ["apps/", "packages/"]
+    }
+  ],
+  "business_operations": [
+    {
+      "name": "share common capabilities across apps",
+      "description": "由共用套件提供多個應用依賴的基礎能力",
+      "actors": ["application packages"],
+      "entrypoints": ["workspace imports"],
+      "logic_units": ["shared-libs"],
+      "related_modules": ["shared-libs", "applications"],
+      "domain_objects": ["shared contracts"],
+      "state_changes": ["cross-package dependency updates"],
+      "side_effects": ["multiple app impact"]
+    }
+  ],
+  "entrypoint_map": [
+    {
+      "entrypoint": "workspace apps",
+      "kind": "page",
+      "related_logic_units": ["applications", "shared-libs"],
+      "related_domain_objects": ["application-specific state or resources", "shared contracts"]
+    }
+  ],
+  "interaction_flows": [
+    {
+      "name": "shared library consumption flow",
+      "description": "應用透過 workspace 依賴使用共用能力",
+      "steps": ["shared library update", "consumer app import", "build/test impact"],
+      "related_modules": ["shared-libs", "applications", "build-config"],
+      "confidence": "medium"
+    }
+  ],
+  "integration_boundaries": [
+    {
+      "name": "workspace dependency graph",
+      "kind": "api",
+      "description": "套件之間的依賴與版本邊界",
+      "related_operations": ["share common capabilities across apps"]
+    }
+  ],
   "risk_patterns": [
     {
       "name": "共用程式庫變更",
@@ -46,13 +100,17 @@
     },
     {
       "name": "跨套件依賴變更",
-      "description": "套件間依賴關係的變更可能導致版本衝突或建置失敗",
+      "description": "套件間依賴關係的變更可能導致版本衝突、執行異常或建置失敗",
       "keywords": ["dependency", "workspace", "package.json", "version"]
     }
   ],
   "analysis_preferences": {
-    "focus": ["impact", "risk"],
+    "focus": ["impact", "risk", "behavior"],
     "ignore_paths": ["node_modules", "dist", "build", ".git", "coverage", ".turbo", ".nx"],
     "output_language": "zh-TW"
-  }
+  },
+  "domain_unknowns": [
+    "各 app 的實際產品邊界與責任待確認",
+    "shared contracts 是否包含嚴格版本治理待確認"
+  ]
 }

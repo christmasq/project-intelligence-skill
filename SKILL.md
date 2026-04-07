@@ -1,6 +1,6 @@
 ---
 name: project-intelligence
-description: Structured software-project analysis skill for unfamiliar repositories, pull requests, git diffs, architecture walkthroughs, onboarding guides, regression-risk review, refactor assessment, and durable knowledge extraction. Use when Claude Code, Codex, or OpenClaw needs to understand a codebase in project context, generate a Project Profile, run review/risk/memory/doc/onboarding/refactor analysis modes, or orchestrate a multi-step repo analysis workflow.
+description: Structured software-project analysis skill for unfamiliar repositories, pull requests, git diffs, business-logic extraction, workflow reconstruction, state/data-flow mapping, architecture walkthroughs, onboarding guides, regression-risk review, refactor assessment, and durable knowledge extraction. Use when Claude Code, Codex, or OpenClaw needs to understand a codebase in project context, reconstruct business modules from front-end or back-end code, generate a Project Profile, run review/risk/memory/doc/onboarding/domain/refactor analysis modes, or orchestrate a multi-step repo analysis workflow.
 ---
 
 # Project Intelligence
@@ -9,7 +9,7 @@ Use this skill to analyze software projects in a structured, profile-aware way.
 
 ## Core workflow
 
-1. Identify the user goal: `review`, `risk`, `memory`, `doc`, `onboarding`, `refactor`, or broad project understanding.
+1. Identify the user goal: `review`, `risk`, `memory`, `doc`, `onboarding`, `domain`, `refactor`, or broad project understanding.
 2. Check whether a Project Profile already exists.
 3. If no suitable profile exists, generate or draft one first.
 4. Load the matching mode instructions and only the resources needed for that request.
@@ -29,6 +29,7 @@ Read these files directly when needed:
 - `modes/memory.md`: extract durable project knowledge
 - `modes/doc.md`: generate technical documentation drafts
 - `modes/onboarding.md`: produce newcomer guides
+- `modes/domain.md`: reconstruct business modules, workflows, state changes, and data relationships from code
 - `modes/refactor.md`: identify refactor candidates and tradeoffs
 - `schemas/project-profile.schema.json`: shape of project profiles
 - `schemas/analysis-result.schema.json`: expected analysis output contract
@@ -43,6 +44,7 @@ Read these files directly when needed:
 - Use `memory` after analysis when the goal is to preserve project-specific knowledge.
 - Use `doc` to draft technical docs from code or architecture context.
 - Use `onboarding` for repo walkthroughs and newcomer reading paths.
+- Use `domain` when the user cares about business modules, entrypoint-to-operation mapping, workflows, state transitions, integration boundaries, or core business logic.
 - Use `refactor` to surface structural problems, opportunities, and safe next steps.
 - Use `orchestrator` when the user asks for a broad analysis and the right sequence is not obvious.
 

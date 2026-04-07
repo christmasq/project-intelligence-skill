@@ -30,7 +30,14 @@ This file is the lightweight operating guide for agents using `project-intellige
 - For newcomer guidance, load `modes/onboarding.md`.
 - Bring in the README, entrypoints, and config files before writing.
 
-### 6. The user wants refactor planning
+### 6. The user wants business logic, workflows, or data relationships
+- Load `prompts/system/core-analyzer.md`.
+- Load `modes/domain.md`.
+- Start from real entrypoints such as page loads, component actions, routes, controllers, jobs, commands, or event handlers.
+- Then trace the logic units, state/data changes, side effects, and integration boundaries touched by those entrypoints.
+- Prefer reconstructing business operations from real code paths over summarizing folder structure.
+
+### 7. The user wants refactor planning
 - Load `modes/refactor.md`.
 - Pair with `modes/risk.md` when proposing real changes so the recommendation includes a safe rollout/testing view.
 
@@ -51,6 +58,7 @@ A minimal useful profile should at least try to capture:
 - important paths
 - major technologies
 - domain terms or risk patterns if they are clear
+- candidate business domains, domain objects, or entrypoints if they are visible
 
 Do not overfit the profile before the repo is understood.
 

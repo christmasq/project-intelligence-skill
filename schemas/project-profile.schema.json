@@ -67,6 +67,231 @@
         "type": "string"
       }
     },
+    "business_domains": {
+      "type": "array",
+      "description": "從程式碼或文件可初步辨識的業務領域",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "keywords": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "evidence_paths": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "domain_objects": {
+      "type": "array",
+      "description": "被判定為高價值的核心業務物件、狀態容器或持久化資源",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "description": "entity | table | aggregate | model | state_container | resource | view_model"
+          },
+          "important_paths": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "business_operations": {
+      "type": "array",
+      "description": "專案內值得追蹤的主要業務操作候選",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "actors": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "entrypoints": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "logic_units": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "related_modules": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "domain_objects": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "state_changes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "side_effects": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "data_relationships": {
+      "type": "array",
+      "description": "重要 domain object、state container、資源或資料表之間的可觀察關係",
+      "items": {
+        "type": "object",
+        "required": ["source", "target", "relationship"],
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "relationship": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["low", "medium", "high"]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "state_machines": {
+      "type": "array",
+      "description": "專案內明顯存在的狀態流轉候選",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "states": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "triggers": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "related_domain_objects": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "entrypoint_map": {
+      "type": "array",
+      "description": "重要入口與其對應邏輯區域",
+      "items": {
+        "type": "object",
+        "required": ["entrypoint"],
+        "properties": {
+          "entrypoint": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "description": "page | component_action | route | controller | job | command | event | mutation"
+          },
+          "related_logic_units": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "related_domain_objects": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "interaction_flows": {
+      "type": "array",
+      "description": "前後端或跨模組的重要互動流程",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "steps": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "related_modules": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["low", "medium", "high"]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "integration_boundaries": {
+      "type": "array",
+      "description": "重要的外部或跨層整合邊界",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "description": "api | database | browser-storage | queue | file | websocket | third-party"
+          },
+          "description": {
+            "type": "string"
+          },
+          "related_operations": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
     "risk_patterns": {
       "type": "array",
       "description": "此專案中特別需要關注的風險模式",
@@ -109,6 +334,11 @@
         }
       },
       "additionalProperties": false
+    },
+    "domain_unknowns": {
+      "type": "array",
+      "description": "目前無法從現有證據確認的業務語意或資料關係",
+      "items": { "type": "string" }
     }
   },
   "additionalProperties": false

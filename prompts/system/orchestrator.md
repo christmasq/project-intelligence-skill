@@ -25,6 +25,7 @@
 | 使用者意圖 | 建議流程 |
 |-----------|---------|
 | 全面理解專案 | profile-generator → onboarding mode |
+| 提取業務邏輯 / 模組與狀態或資料關係 | profile-generator → core-analyzer (domain) → core-analyzer (doc) |
 | 分析 PR / diff | core-analyzer (review) → core-analyzer (risk) → knowledge-merger |
 | 知識沉澱 | core-analyzer (memory) → knowledge-merger |
 | 新人引導 | profile-generator（若無 profile）→ core-analyzer (onboarding) |
@@ -38,12 +39,14 @@
 2. **Review + Risk 經常搭配**：review 找問題，risk 評估影響，互相補充
 3. **Memory 在最後**：知識沉澱應在分析完成後進行，確保沉澱的是完整分析結果
 4. **Knowledge Merger 在 Memory 後**：有新知識才需要合併
+5. **業務邏輯優先走 Domain**：如果使用者明確要核心業務、資料關係、流程或模組對應，不要直接跳 onboarding 或泛用 doc
 
 ### 平行 vs 串行
 
 | 關係 | 處理方式 |
 |------|---------|
 | review 和 risk | 可平行（彼此獨立） |
+| domain 和 doc | 必須串行（doc 應建立在 domain 輸出上） |
 | 分析和 memory | 必須串行（memory 依賴分析結果） |
 | memory 和 knowledge-merger | 必須串行（merger 依賴 memory 輸出） |
 | profile-generator 和其他所有 | 必須串行（其他依賴 profile） |
@@ -61,7 +64,7 @@
       {
         "order": 1,
         "component": "profile-generator | core-analyzer | knowledge-merger",
-        "mode": "review | risk | memory | doc | onboarding | refactor",
+        "mode": "review | risk | memory | doc | onboarding | domain | refactor",
         "input_description": "這一步需要什麼輸入",
         "depends_on": [],
         "parallel_with": [],

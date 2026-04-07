@@ -25,6 +25,7 @@
 | 單一模組的程式碼 | 模組說明文件 |
 | 跨模組的 diff | 變更說明 / changelog 條目 |
 | 整個 repo 結構 | 架構概覽 |
+| entrypoint/operation/state-data analysis 結果 | 業務模組地圖 / 流程指南 / 資料關係指南 |
 | 特定功能的程式碼 | 功能說明文件 |
 | 設定檔 | 設定指南 |
 
@@ -51,7 +52,7 @@
 ```json
 {
   "mode_specific": {
-    "doc_type": "module_overview | changelog_entry | architecture_overview | feature_guide | config_guide",
+    "doc_type": "module_overview | changelog_entry | architecture_overview | feature_guide | config_guide | business_domain_map | workflow_guide | data_relationship_guide | ui_state_flow_guide | end_to_end_interaction_guide",
     "title": "文件標題",
     "content_markdown": "完整的 Markdown 文件內容",
     "completeness": "low | medium | high",
@@ -75,3 +76,4 @@
 3. **標記推斷**：任何基於推測寫出的內容，用 `<!-- TODO: 請確認 -->` 標記
 4. **不要複製程式碼**：文件解釋概念和流程，不是把程式碼再貼一次
 5. **保持結構一致**：使用標準的 Markdown 結構（標題、清單、程式碼區塊）
+6. **業務輸出優先沿證據整理**：若已有 domain analysis，先整理業務模組、操作、流程、狀態變化與資料關係，再補技術背景
