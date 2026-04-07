@@ -55,67 +55,6 @@
       "important_paths": ["src/jobs/", "src/workers/"]
     }
   ],
-  "business_operations": [
-    {
-      "name": "manage resource records",
-      "description": "透過 API 建立、修改或刪除核心資料記錄",
-      "actors": ["api caller"],
-      "entrypoints": ["HTTP routes"],
-      "logic_units": ["services", "use cases"],
-      "related_modules": ["api", "application-logic", "data-access"],
-      "domain_objects": ["persistent records"],
-      "state_changes": ["record created/updated/deleted"],
-      "side_effects": ["database write", "cache update"]
-    },
-    {
-      "name": "run background processing",
-      "description": "以 job 或 worker 執行延後處理",
-      "actors": ["system"],
-      "entrypoints": ["job queue", "worker"],
-      "logic_units": ["jobs"],
-      "related_modules": ["jobs", "application-logic"],
-      "domain_objects": ["background job payloads", "persistent records"],
-      "state_changes": ["async processing status"],
-      "side_effects": ["queue consumption", "database write", "notification"]
-    }
-  ],
-  "entrypoint_map": [
-    {
-      "entrypoint": "HTTP routes",
-      "kind": "route",
-      "related_logic_units": ["services", "use cases"],
-      "related_domain_objects": ["persistent records"]
-    },
-    {
-      "entrypoint": "job workers",
-      "kind": "job",
-      "related_logic_units": ["jobs"],
-      "related_domain_objects": ["background job payloads", "persistent records"]
-    }
-  ],
-  "interaction_flows": [
-    {
-      "name": "request to persistence flow",
-      "description": "API request 進入後呼叫 application logic，最後寫入持久化資源",
-      "steps": ["route", "application logic", "repository", "database write"],
-      "related_modules": ["api", "application-logic", "data-access"],
-      "confidence": "medium"
-    }
-  ],
-  "integration_boundaries": [
-    {
-      "name": "primary database",
-      "kind": "database",
-      "description": "主要持久化資料庫",
-      "related_operations": ["manage resource records", "run background processing"]
-    },
-    {
-      "name": "job queue",
-      "kind": "queue",
-      "description": "背景工作排程與消費邊界",
-      "related_operations": ["run background processing"]
-    }
-  ],
   "risk_patterns": [
     {
       "name": "API 契約變更",

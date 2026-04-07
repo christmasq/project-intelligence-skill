@@ -154,7 +154,7 @@
 3. 使用 `risk_patterns` 檢查是否有已知風險模式匹配
 4. 使用 `analysis_preferences.focus` 決定分析重點
 5. 使用 `analysis_preferences.output_language` 決定輸出語言
-6. 若 profile 提供 `business_domains`、`domain_objects`、`business_operations`、`interaction_flows` 或 `data_relationships`，用它們輔助驗證，而不是直接照抄
+6. 若 profile 提供 `business_domains` 或 `domain_objects`，用它們輔助驗證，而不是直接照抄
 
 如果**沒有** Project Profile：
 

@@ -17,16 +17,15 @@
 - 不可假設所有業務邏輯都在後端
 - 不可假設前端只是展示層
 
-你的工作是提取「通用抽象」：
+你的工作是提取「最小但關鍵的上下文」：
 
-- modules
-- business_domains
-- domain_objects
-- business_operations
-- state_machines
-- entrypoint_map
-- interaction_flows
-- integration_boundaries
+- modules（技術模組）
+- business_domains（業務領域候選）
+- domain_objects（核心物件或狀態容器）
+- domain_terms（專案術語）
+- risk_patterns（風險模式）
+
+深入的業務操作、狀態流轉、跨模組流程分析由 `domain mode` 負責，不在 profile generator 的範圍內。
 
 ---
 
@@ -99,42 +98,13 @@
 - `kind`
 - `important_paths`
 
-### 第五步：辨識主要 entrypoints 與 operations
-
-Profile 不需要完整列出所有操作，但應盡量提取高價值候選。
-
-優先從這些入口推導：
-
-- page / route / component action
-- controller / endpoint / handler
-- job / cron / command / event listener
-- mutation / reducer / use case
-
-對 `business_operations` 的要求：
-
-- 只填有足夠證據的候選
-- 不需要完整流程證明，但至少要有命名與路徑依據
-- 若無法明確確認，寧可留空
-
-### 第六步：辨識狀態、流程與整合邊界
-
-若有足夠證據，嘗試填入：
-
-- `state_machines`
-- `entrypoint_map`
-- `interaction_flows`
-- `integration_boundaries`
-- `data_relationships`
-
-這些欄位是加分題，不是每次都必須塞滿。
-
-### 第七步：提取術語
+### 第五步：提取術語
 
 - 如果 README 或程式碼中有明確定義的專案術語，列入 `domain_terms`
 - 如果沒有明確定義的術語，`domain_terms` 留空
 - **不要根據通用程式設計概念填充術語**
 
-### 第八步：設定風險模式
+### 第六步：設定風險模式
 
 根據技術棧與可觀察到的執行模型設定合理的預設風險模式。
 
@@ -150,19 +120,20 @@ Profile 不需要完整列出所有操作，但應盡量提取高價值候選。
 
 只加入與此專案技術棧和結構相關的風險模式。
 
-### 第九步：設定分析偏好
+### 第七步：設定分析偏好
 
 - `output_language`：預設 zh-TW，除非輸入明確為其他語言
 - `focus`：根據專案類型設定合理的預設焦點
 - `ignore_paths`：根據技術棧設定
   - 例如 `node_modules`, `dist`, `build`, `coverage`, `.git`, `__pycache__`, `bin`, `obj`
 
-### 第十步：誠實標記
+### 第八步：誠實標記
 
 - 哪些欄位是你根據證據確認的？
 - 哪些欄位是候選或推斷？
 - 哪些欄位需要專案成員確認？
 - 整體 confidence 是多少？
+- 如果專案需要深入的業務操作、狀態流轉或跨模組流程分析，建議使用 `domain mode`
 
 ---
 
@@ -203,7 +174,7 @@ Profile 不需要完整列出所有操作，但應盡量提取高價值候選。
 輸出時請遵守：
 
 - 若沒有足夠證據，可省略非必要欄位或保守填寫
-- `business_domains`、`domain_objects`、`business_operations` 等欄位是候選上下文，不要求一次完整
+- `business_domains`、`domain_objects` 是候選上下文，不要求一次完整
 - 不要為了填滿 schema 而捏造內容
 
 ### Part 2：生成報告
