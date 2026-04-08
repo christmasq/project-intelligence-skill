@@ -57,6 +57,9 @@ cp profiles/backend-service.sample.json profiles/my-project.json
 **Refactor 模式** — 重構機會分析：
 > 請使用 project-intelligence 的 refactor mode，分析這個模組的重構機會。
 
+**Domain 模式** — 業務邏輯重建與資料流分析：
+> 請使用 project-intelligence 的 domain mode，分析 order 模組的業務邏輯。
+
 **複合指令** — 不確定用哪個 mode？直接描述需求：
 > 請使用 project-intelligence 幫我全面分析這次 PR。
 
@@ -86,7 +89,8 @@ Orchestrator 會自動決定執行哪些 mode 以及順序。
 ```
 project-intelligence-skill/
 ├── README.md                              ← 你正在讀的文件
-├── skill.yaml                             ← Skill 定義與設定
+├── SKILL.md                              ← Skill 正式進入點（AgentSkill 標準格式）
+├── skill.yaml                             ← Legacy metadata
 ├── prompts/system/
 │   ├── core-analyzer.md                   ← 核心分析引擎（所有 mode 共用）
 │   ├── profile-generator.md               ← Profile 自動生成器
@@ -102,6 +106,7 @@ project-intelligence-skill/
 │   ├── risk.md                            ← 風險分析模式
 │   ├── doc.md                             ← 文件生成模式
 │   ├── onboarding.md                      ← 新人引導模式
+│   ├── domain.md                          ← 業務邏輯重建模式
 │   └── refactor.md                        ← 重構分析模式
 ├── knowledge/
 │   ├── global/                            ← 全域知識（跨專案通用）
@@ -228,6 +233,11 @@ Profile 是分析引擎理解你專案的關鍵。但它不需要一步到位。
 
 為剛加入專案的工程師生成入門指南，包含專案全貌、建議閱讀順序、專案慣例、常見陷阱和開發環境設定。
 
+### domain
+**用途**：業務邏輯重建
+
+從實際程式碼路徑重建業務模組、操作流程、狀態流轉與資料關係。沿 `entrypoint → operation → state/data changes → side effects` 路徑分析，而非僅描述目錄結構。輸出包含 business_modules、operations、data_relationships、state_transitions、cross_module_flows 等。
+
 ### refactor
 **用途**：重構機會分析
 
@@ -284,6 +294,7 @@ Knowledge Merger 會自動檢查過期候選並建議處理。
 |------|--------------|
 | 全面理解專案 | profile-generator → onboarding mode |
 | 分析 PR | review mode ∥ risk mode → memory mode → knowledge-merger |
+| 提取業務邏輯 | profile-generator → domain mode → doc mode |
 | 重構評估 | refactor mode → risk mode |
 | 知識沉澱 | memory mode → knowledge-merger |
 | 完整分析循環 | review ∥ risk → memory → knowledge-merger |
@@ -353,6 +364,152 @@ Profile: profiles/backend-service.sample.json
   ]
 }
 ```
+
+---
+
+## 使用流程
+
+### 第一次導入專案
+
+#### Step 1：安裝 Skill
+
+```bash
+# 方式一：放到專案內（推薦，可與團隊共享且版控）
+cp -r project-intelligence-skill your-project/.claude/skills/project-intelligence
+
+# 方式二：放到全域 skill 目錄（個人使用）
+cp -r project-intelligence-skill ~/.claude/skills/project-intelligence
+```
+
+#### Step 2：生成 Project Profile
+
+在目標專案中，對 Claude Code 說：
+
+> 請使用 project-intelligence 幫我生成這個專案的 Profile
+
+AI 會：
+1. 載入 `prompts/system/profile-generator.md`
+2. 掃描 README、目錄樹、依賴檔、代表性程式碼
+3. 輸出 `project-profile.json`（符合 schema）+ 生成報告（標明確認/推斷/待確認的部分）
+
+#### Step 3：將 Profile 存入專案
+
+```
+your-project/
+├── .claude/
+│   ├── skills/
+│   │   └── project-intelligence/    ← skill 本體
+│   └── project-profile.json         ← 生成的 Profile（必須入 git）
+```
+
+### 哪些檔案要放到專案 git 中
+
+| 檔案 | 是否入 git | 原因 |
+|------|-----------|------|
+| `project-profile.json` | ✅ **必須** | 核心上下文，團隊共享，隨專案演進更新 |
+| `knowledge/projects/{name}/` | ✅ **建議** | 團隊累積的分析成果，跨會話可用 |
+| `knowledge/global/` | ⚠️ 可選 | 跨團隊共享的全域知識 |
+| skill 本體 | ⚠️ 看需求 | 想鎖定版本就放專案 git；否則放全域 `~/.claude/skills/` |
+
+**最小必須入 git 的結構：**
+
+```
+your-project/
+├── .claude/
+│   └── project-profile.json          ← 必須，隨專案演進維護
+└── .project-knowledge/                ← 建議，團隊知識累積
+    ├── auth-middleware-pattern.json
+    ├── order-state-machine.json
+    └── ...
+```
+
+### Profile 的維護時機
+
+- 新增主要模組時 → 更新 `modules`
+- 發現新的業務領域時 → 更新 `business_domains`
+- 技術棧變更時（加入 Redis、換 ORM 等）→ 更新 `tech_stack`
+- 隨時可以請 AI：「根據最近的變更更新 Project Profile」
+
+---
+
+## 團隊開發情境
+
+### 場景 1：日常 PR Review
+
+開發者提交 PR 後：
+
+> 「用 project-intelligence 分析這次 PR」
+
+Orchestrator 自動規劃：`review mode` ∥ `risk mode` → 並行執行
+
+輸出：結構化 review findings（severity 分級）、影響範圍、風險評估、建議測試
+
+### 場景 2：新人 Onboarding
+
+新人加入時：
+
+> 「用 project-intelligence 幫新人生成入門指南」
+
+流程：若沒有 Profile 會先自動生成 → `onboarding mode`
+
+輸出：學習路徑、慣例說明、常見陷阱、開發環境設定
+
+### 場景 3：業務邏輯梳理
+
+PM 或 Tech Lead 想釐清某個模組的業務邏輯：
+
+> 「用 project-intelligence 提取 order 模組的業務邏輯」
+
+流程：`domain mode` → `doc mode`
+
+輸出：業務操作清單、狀態流轉、跨模組依賴、資料關係
+
+### 場景 4：重構前評估
+
+準備重構某個模組前：
+
+> 「用 project-intelligence 評估重構 auth 模組的風險」
+
+流程：`refactor mode` → `risk mode`
+
+輸出：重構候選點、問題類型、建議策略、影響評估
+
+### 場景 5：知識沉澱
+
+Sprint 結束或重大變更後：
+
+> 「用 project-intelligence 把這次分析的重要發現沉澱下來」
+
+流程：`memory mode` → `knowledge-merger`
+
+沉澱到 knowledge 目錄，後續分析時自動參考
+
+### 團隊協作建議
+
+```
+┌──────────────────────────────────────────────┐
+│            團隊共享（git 版控）                  │
+│                                                │
+│  project-profile.json   ← Tech Lead 維護       │
+│  knowledge/             ← 團隊共同累積          │
+│                                                │
+├──────────────────────────────────────────────┤
+│            個人使用                              │
+│                                                │
+│  日常 PR review          ← 各開發者自行觸發     │
+│  理解不熟悉的模組         ← 新人或跨組支援時用   │
+│                                                │
+├──────────────────────────────────────────────┤
+│            定期活動                              │
+│                                                │
+│  Sprint 結束  → memory mode 沉澱知識           │
+│  重大重構前   → refactor + risk 評估            │
+│  新人到職     → onboarding mode 生成指南        │
+│  Profile 過時 → 重新跑 profile-generator 更新   │
+└──────────────────────────────────────────────┘
+```
+
+**關鍵原則：Profile 是團隊共識文件，不是個人筆記。** 修改 Profile 應該像修改 README 一樣——透過 PR 審查，確保團隊對專案結構的理解一致。
 
 ---
 
